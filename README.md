@@ -2,6 +2,12 @@
 
 ## Next project:  Timeline arrows:
 https://freefrontend.com/css-arrows/
+https://freefrontend.com/css-timelines/
+http://uirockstar.net/tool/cssarrowgenerator.html
+https://stackoverflow.com/a/23428428
+https://cloudfour.com/thinks/css-animation-timelines-building-a-rube-goldberg-machine/
+
+
 
 
 ## Summary
