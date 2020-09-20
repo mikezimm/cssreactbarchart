@@ -146,9 +146,12 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
         }
         let arrowRight = <div className={ stylesC.arrowRight } style={{ borderLeft: '50px solid transparent' }}></div>;
 
+        /**
+         * To shift arrow to right:  add left xx% to the left arrow and block
+         */
         
         thisChart.push(
-          <span className={ [stylesC.block, stylesC.innerShadow].join(' ') } style={ blockStyle } title={ cd.labels[i] } >
+          <span id={ cd.labels[i] } onClick= { this.onclick.bind(this) } className={ [stylesC.block, stylesC.innerShadow].join(' ') } style={ blockStyle } title={ cd.labels[i] } >
                <span className={ stylesC.value } style={ valueStyle } >{ barLabel }</span> { arrowRight }
           </span>
         ) ;
@@ -203,7 +206,13 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
               </ul>
             </div>
    */
-
+  private onclick = (item): void => {
+    //This sends back the correct pivot category which matches the category on the tile.
+    let e: any = event;
+    //e.target.innerText or e.target.id gives info about the item clicked.
+    console.log(item);
+    alert('Hi!');
+  }
 
 }
 
