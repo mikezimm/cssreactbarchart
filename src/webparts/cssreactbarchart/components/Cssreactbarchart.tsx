@@ -144,12 +144,22 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
           }
 
         }
+        let arrowRight = <div className={ stylesC.arrowRight } style={{ borderLeft: '50px solid transparent' }}></div>;
 
+        
         thisChart.push(
           <span className={ [stylesC.block, stylesC.innerShadow].join(' ') } style={ blockStyle } title={ cd.labels[i] } >
-              <span className={ stylesC.value } style={ valueStyle } >{ barLabel }</span>
+               <span className={ stylesC.value } style={ valueStyle } >{ barLabel }</span> { arrowRight }
           </span>
         ) ;
+      }
+
+      if ( stacked === false ) {
+        thisChart = thisChart.map( c => {
+          let arrowLeft = <div className={ stylesC.arrowLeft } style={{ borderLeft: '50px solid transparent' }}></div>;
+
+          return <div style= {{ paddingTop: 5, paddingBottom: 5, height: 40 }}>{ c } { arrowLeft }</div>;
+        });
       }
 
       let chartStyles : any = { lineHeight: stateHeight };
