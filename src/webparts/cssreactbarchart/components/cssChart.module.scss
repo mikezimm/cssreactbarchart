@@ -99,7 +99,7 @@
     display: block;
     line-height: 1em;
     position: absolute;
-    top: 50%;
+    top: 35%; //was 50% for 100 height bar.
     left: 50%;
     transform: translate(-50%);
   }
@@ -109,7 +109,7 @@
   }
   .yAxis {
     height: 20px;
-      transform: translate(-32px,170px) rotate(270deg);
+      transform: translate(-32px, 75px) rotate(270deg); //was (-32px, 170px) for 3 100px height charts
       position: absolute;
       left: 0;
   }
