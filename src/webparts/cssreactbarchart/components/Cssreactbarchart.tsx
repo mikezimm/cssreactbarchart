@@ -1,6 +1,8 @@
 import * as React from 'react';
 import styles from './Cssreactbarchart.module.scss';
 import { ICssreactbarchartProps } from './ICssreactbarchartProps';
+import { ICssreactbarchartState } from './ICssreactbarchartState';
+
 import { escape } from '@microsoft/sp-lodash-subset';
 
 import { getRandomInt, getRandomFromArray, randomDate, getRandomChance } from '../../../services/randomServices';
@@ -8,6 +10,7 @@ import { getRandomInt, getRandomFromArray, randomDate, getRandomChance } from '.
 import { ICSSChartSeries } from './IReUsableInterfaces';
 
 import stylesC from './cssChart.module.scss';
+import { Toggle } from 'office-ui-fabric-react';
 
 export interface ISimpleData {
   title: string;
@@ -89,19 +92,64 @@ const barValueAsPercent : boolean = false;
 const height: number | string = "50px"; //This would be horizonal bar height... one horizontal layer
 const barValues: 'counts' | 'sums' | 'avgs' | 'percents' = 'counts';
 
-export default class Cssreactbarchart extends React.Component<ICssreactbarchartProps, {}> {
+export default class Cssreactbarchart extends React.Component<ICssreactbarchartProps, ICssreactbarchartState> {
+
+  public constructor(props:ICssreactbarchartProps){
+    super(props);
+
+        // Styles & Chart code for chart compliments of:  https://codepen.io/richardramsay/pen/ZKmQJv?editors=1010
+
+        let chartData: ICSSChartSeries[] = [];
+
+        chartData.push( makeChartData(10, 'Category') ) ;
+        chartData.push( makeChartData(10, 'Item') ) ;
+        chartData.push( makeChartData(10, 'Product') ) ;
+
+    this.state = { 
+      chartData: chartData,
+      toggle: true,
+    };
+
+// because our event handler needs access to the component, bind 
+//  the component to the function so it can get access to the
+//  components properties (this.props)... otherwise "this" is undefined
+// this.onLinkClick = this.onLinkClick.bind(this);
+
+}
+
+  public componentDidMount() {
+    console.log('Mounted!');
+  }
+
+  /***
+ *         d8888b. d888888b d8888b.      db    db d8888b. d8888b.  .d8b.  d888888b d88888b 
+ *         88  `8D   `88'   88  `8D      88    88 88  `8D 88  `8D d8' `8b `~~88~~' 88'     
+ *         88   88    88    88   88      88    88 88oodD' 88   88 88ooo88    88    88ooooo 
+ *         88   88    88    88   88      88    88 88~~~   88   88 88~~~88    88    88~~~~~ 
+ *         88  .8D   .88.   88  .8D      88b  d88 88      88  .8D 88   88    88    88.     
+ *         Y8888D' Y888888P Y8888D'      ~Y8888P' 88      Y8888D' YP   YP    YP    Y88888P 
+ *                                                                                         
+ *                                                                                         
+ */
+
+
+
+ 
+/***
+ *         d8888b. d88888b d8b   db d8888b. d88888b d8888b. 
+ *         88  `8D 88'     888o  88 88  `8D 88'     88  `8D 
+ *         88oobY' 88ooooo 88V8o 88 88   88 88ooooo 88oobY' 
+ *         88`8b   88~~~~~ 88 V8o88 88   88 88~~~~~ 88`8b   
+ *         88 `88. 88.     88  V888 88  .8D 88.     88 `88. 
+ *         88   YD Y88888P VP   V8P Y8888D' Y88888P 88   YD 
+ *                                                          
+ *                                                          
+ */
+
 
   public render(): React.ReactElement<ICssreactbarchartProps> {
 
-    // Styles & Chart code for chart compliments of:  https://codepen.io/richardramsay/pen/ZKmQJv?editors=1010
-
-    let chartData: ICSSChartSeries[] = [];
-
-    chartData.push( makeChartData(10, 'Category') ) ;
-    chartData.push( makeChartData(10, 'Item') ) ;
-    chartData.push( makeChartData(10, 'Product') ) ;
-
-    console.log('chartData Before: ', chartData );
+    console.log('chartData Before: ', this.state.chartData );
     if ( stacked === false ) {
       //Re-sort all arrays by same key:
 
@@ -109,7 +157,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
     let stateHeight = stacked === false ? "40px" : height;
 
-    let charts = chartData.map( cdO => {
+    let charts = this.state.chartData.map( cdO => {
 
       let cd : ICSSChartSeries = null;
 
@@ -165,8 +213,8 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
         /**
          * To shift arrow to right:  add left xx% to the left arrow and block
          */
-        
-        let spanStyle = { transform: 1 }
+
+        let spanStyle = { transform: 1 };
         thisChart.push(
           <span id={ cd.labels[i] } onClick= { this.onclick.bind(this) } className={ [stylesC.block, stylesC.innerShadow].join(' ') } style={ blockStyle } title={ cd.labels[i] } >
                <span className={ labelClass } style={ valueStyle } >{ barLabel }</span> { arrowRight }
@@ -176,9 +224,11 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
       if ( stacked === false ) {
         thisChart = thisChart.map( c => {
+
+          let showOrHide = getRandomInt(1,2) === 1 ? stylesC.showBar : stylesC.hideBar;
           let arrowLeft = <div className={ stylesC.arrowLeft } style={{ borderLeft: '50px solid transparent' }}></div>;
 
-          return <div style= {{ paddingTop: 5, paddingBottom: 5, height: 40 }}>{ c } { arrowLeft }</div>;
+          return <div className= { showOrHide } style= {{ }}>{ c } { arrowLeft }</div>;
         });
       }
 
@@ -236,8 +286,13 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
     console.log( 'You clicked: ', value );  
 
+    this.setState({
+        toggle: !Toggle,
+    });
     //e.target.innerText or e.target.id gives info about the item clicked.
-    alert('Hi! You clicked: ' + value);
+    //alert('Hi! You clicked: ' + value);
+
+
   }
 
 }
