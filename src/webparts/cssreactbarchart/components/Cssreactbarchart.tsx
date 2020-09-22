@@ -228,6 +228,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
           blockStyle.width = barPercent + '%';
           barLabel += ' - ' + cd.labels[i];
           blockStyle.whiteSpace = 'nowrap';
+          blockStyle.transform =  'scale(50%)';
 
           blockStyle.backgroundColor = '#E27A3F';
           if ( barPercent < 50 ) {
@@ -236,7 +237,8 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
             let leftValue = barPercent < 1 ? '15%' : ( 1 + 7 / barPercent ) * 100 + '%'; // Logic:  1 + y/x where x is the % of the bar, y is the % to the right of the bar you want the label
             valueStyle.left = leftValue;
             blockStyle.color = 'black';
-            blockStyle.transform =  'translateX(50%)';
+            blockStyle.transform =  'translateX('+ getRandomInt( -50,50) +')';
+            blockStyle.transform =  'scaleX('+ getRandomInt( 1,2) +')';            
           }
 
         }
