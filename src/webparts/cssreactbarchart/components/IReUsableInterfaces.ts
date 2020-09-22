@@ -150,6 +150,8 @@ export interface IChartSeries {
     axisTitle?: string;
     sums?: number[];
     counts?: number[];
+    starts?: number[];
+    ends?: number[];
     avgs?: number[];
     percents?: any[];
     totalS?: number;

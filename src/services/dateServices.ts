@@ -10,6 +10,15 @@ export const msPerMo = 2678400000;
 export const msPerQ = 7776000000;
 export const msPerYr = 31536000000;
 
+export function addDaysToDate( startDate: number, days: number ) {
+
+  let date = new Date(startDate.valueOf());
+  date.setDate(date.getDate() + days);
+
+  return date;
+
+} 
+
 export const monthStr = {
   'en-us':["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
   'es': ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],

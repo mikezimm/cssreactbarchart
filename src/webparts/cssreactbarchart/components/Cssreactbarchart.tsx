@@ -7,6 +7,8 @@ import { escape } from '@microsoft/sp-lodash-subset';
 
 import { getRandomInt, getRandomFromArray, randomDate, getRandomChance } from '../../../services/randomServices';
 
+import { addDaysToDate } from '../../../services/dateServices';
+
 import { ICSSChartSeries } from './IReUsableInterfaces';
 
 import stylesC from './cssChart.module.scss';
@@ -24,10 +26,20 @@ export function makeChartData( qty: number, label: string ) {
   let randomTitles = generateTitles( label, qty );
   const arrSum = randomNums.reduce((a,b) => a + b, 0);
   let percents = randomNums.map( v => { return (v / arrSum * 100 ) ; });
+  let randomStarts = [];
+  for ( let i = 0 ; i < 10 ; i++ ) {
+    randomStarts.push( randomDate(new Date(2018, 3, 15), new Date(2024, 7, 21) ).getTime() );
+  }
+  let randomEnds = randomStarts.map( s => {
+    return ( addDaysToDate(s, getRandomInt(100 , 300) ).getTime() );
+  });
+
   let chartData: ICSSChartSeries = {
     title: label,
     labels: randomTitles,
     counts: randomNums,
+    starts: randomStarts,
+    ends: randomEnds,
     percents: percents,
     totalS: arrSum,
   };
@@ -97,17 +109,25 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
   public constructor(props:ICssreactbarchartProps){
     super(props);
 
-        // Styles & Chart code for chart compliments of:  https://codepen.io/richardramsay/pen/ZKmQJv?editors=1010
+      // Styles & Chart code for chart compliments of:  https://codepen.io/richardramsay/pen/ZKmQJv?editors=1010
 
-        let chartData: ICSSChartSeries[] = [];
+      let chartData: ICSSChartSeries[] = [];
 
-        chartData.push( makeChartData(10, 'Category') ) ;
-        chartData.push( makeChartData(10, 'Item') ) ;
-        chartData.push( makeChartData(10, 'Product') ) ;
+      chartData.push( makeChartData(10, 'Category') ) ;
+      chartData.push( makeChartData(10, 'Item') ) ;
+      chartData.push( makeChartData(10, 'Product') ) ;
+
+      let rowVis = [];
+      for ( let i = 0 ; i < 10 ; i++ ) {
+        rowVis.push( getRandomInt( 0,1) );
+      }
+
+      console.log('constructor chartData: ', chartData );
 
     this.state = { 
       chartData: chartData,
       toggle: true,
+      rowVis: rowVis,
     };
 
 // because our event handler needs access to the component, bind 
@@ -149,7 +169,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
   public render(): React.ReactElement<ICssreactbarchartProps> {
 
-    console.log('chartData Before: ', this.state.chartData );
+    //console.log('chartData Before: ', this.state.chartData );
     if ( stacked === false ) {
       //Re-sort all arrays by same key:
 
@@ -168,7 +188,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
         cd = cdO;
       }
 
-      console.log('chartData after: cd', cd );
+      //console.log('chartData after: cd', cd );
 
       /**
        * To indent bar and label:
@@ -182,11 +202,23 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
        */
       let thisChart : any[] = [];
       let maxNumber: number = Math.max( ...cd[barValues] );  //Need to use ... spread in math operators:  https://stackoverflow.com/a/1669222
+
+      let rowVis = [];
+      for ( let i = 0 ; i < 10 ; i++ ) {
+        rowVis.push( getRandomInt( 0,2) );
+      }
+
       for ( let i in cd[barValues] ){
+
+        let showOrHide = rowVis[i] !== 1 ? stylesC.showBar : stylesC.hideBar;
 
         let labelClass = stylesC.valueCenterBar;
         let blockStyle : any = { height: stateHeight , width: ( cd.percents[i] ) + '%'};
         let valueStyle : any = {};
+
+        cd[barValues][i] +=  getRandomInt(-20,20);
+        if ( cd[barValues][i] < 5 ) { cd[barValues][i] = getRandomInt(5,50) ; }
+
         let barLabel = barValueAsPercent === true ? ( cd.percents[i].toFixed(1) ) + '%' : cd[barValues][i];
         let barPercent = 50;
 
@@ -214,23 +246,23 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
          * To shift arrow to right:  add left xx% to the left arrow and block
          */
 
+        let arrowLeft = <div className={ [stylesC.arrowLeft,  ].join(' ') } style={{ borderLeft: '50px solid transparent' }}></div>;
+
         let spanStyle = { transform: 1 };
-        thisChart.push(
-          <span id={ cd.labels[i] } onClick= { this.onclick.bind(this) } className={ [stylesC.block, stylesC.innerShadow].join(' ') } style={ blockStyle } title={ cd.labels[i] } >
+        let theChart =
+          <span id={ cd.labels[i] } onClick= { this.onclick.bind(this) } className={ [stylesC.block, stylesC.innerShadow, ].join(' ') } style={ blockStyle } title={ cd.labels[i] } >
                <span className={ labelClass } style={ valueStyle } >{ barLabel }</span> { arrowRight }
-          </span>
-        ) ;
+          </span>;
+
+        if ( stacked === false ) {
+
+            theChart = <div className= { showOrHide } style= {{ }}>{ theChart } { arrowLeft }</div>;
+        }
+
+        thisChart.push( theChart ) ;
       }
 
-      if ( stacked === false ) {
-        thisChart = thisChart.map( c => {
 
-          let showOrHide = getRandomInt(1,2) === 1 ? stylesC.showBar : stylesC.hideBar;
-          let arrowLeft = <div className={ stylesC.arrowLeft } style={{ borderLeft: '50px solid transparent' }}></div>;
-
-          return <div className= { showOrHide } style= {{ }}>{ c } { arrowLeft }</div>;
-        });
-      }
 
       let chartStyles : any = { lineHeight: stateHeight };
       let rowStyles : any = stacked === false ? { maxWidth: '450px' } : {};
