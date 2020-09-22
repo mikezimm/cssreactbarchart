@@ -102,7 +102,7 @@ const stacked: boolean = false;
 const sortStack: 'asc' | 'dec' | false = undefined;
 const barValueAsPercent : boolean = false;
 const height: number | string = "50px"; //This would be horizonal bar height... one horizontal layer
-const barValues: 'counts' | 'sums' | 'avgs' | 'percents' = 'counts';
+const barValues: 'counts' | 'sums' | 'avgs' | 'percents' | 'starts' | 'ends' = 'counts';
 
 export default class Cssreactbarchart extends React.Component<ICssreactbarchartProps, ICssreactbarchartState> {
 
@@ -113,21 +113,23 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
       let chartData: ICSSChartSeries[] = [];
 
-      chartData.push( makeChartData(10, 'Category') ) ;
-      chartData.push( makeChartData(10, 'Item') ) ;
-      chartData.push( makeChartData(10, 'Product') ) ;
-
-      let rowVis = [];
-      for ( let i = 0 ; i < 10 ; i++ ) {
-        rowVis.push( getRandomInt( 0,1) );
-      }
+      chartData.push( makeChartData(4, 'Category') ) ;
+//      chartData.push( makeChartData(10, 'Item') ) ;
+//      chartData.push( makeChartData(10, 'Product') ) ;
 
       console.log('constructor chartData: ', chartData );
+
+      let startDate = new Date(2020, 0, 1);
+      let endDate = new Date(2020, 11, 31);
 
     this.state = { 
       chartData: chartData,
       toggle: true,
-      rowVis: rowVis,
+      startTime: startDate.getTime(),
+      endTime: endDate.getTime(),
+      startLocal: startDate.toDateString(),
+      endLocal: endDate.toDateString(),
+      rangeTime: endDate.getTime() - startDate.getTime(),
     };
 
 // because our event handler needs access to the component, bind 
@@ -203,42 +205,78 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
       let thisChart : any[] = [];
       let maxNumber: number = Math.max( ...cd[barValues] );  //Need to use ... spread in math operators:  https://stackoverflow.com/a/1669222
 
-      let rowVis = [];
-      for ( let i = 0 ; i < 10 ; i++ ) {
-        rowVis.push( getRandomInt( 0,2) );
-      }
+      for ( let i in cd['starts'] ){
 
-      for ( let i in cd[barValues] ){
 
-        let showOrHide = rowVis[i] !== 1 ? stylesC.showBar : stylesC.hideBar;
+        //Roadmap calculations
+        //LABEL Dates
+        let thisStart = new Date(cd['starts'][i]);// Milliseconds to date
+        let startLabel = thisStart.toLocaleDateString();
+        let thisEnd = new Date(cd['ends'][i]);// Milliseconds to date
+        let endLabel = thisEnd.toLocaleDateString();
+
+        let barLabel = startLabel + ' - ' + endLabel;
+
+        //BAR PERCENTS  0% = Timeline Start,  100% = Timeline End
+        let startPercent = 100* ( cd['starts'][i] - this.state.startTime ) / this.state.rangeTime ;
+        let endPercent = 100* ( cd['ends'][i] - this.state.startTime ) / this.state.rangeTime;
+
+        let isVisible = true;
+        if ( startPercent > 100 ) { isVisible = false; } //start% > 100 means bar is to right of window
+        if ( endPercent <  0 ) { isVisible = false; } //end% > 100 means bar is to left of window
+
+        let thisBarPercent = ( endPercent - startPercent );
+        let barGapLeft = isVisible === true ? startPercent < 0 ? 0 : startPercent : null;  // barGapLeft
+        let barGapRight = isVisible === true ? endPercent > 100 ? 0 : 100 - endPercent : null;    
+        let visBarPercent = isVisible === true ? 100 - barGapRight - barGapLeft : 0 ;
+
+        let biggestVisiblePercent = visBarPercent > barGapLeft ? visBarPercent : barGapLeft;
+        biggestVisiblePercent = barGapRight > barGapLeft ? barGapRight : barGapLeft;
+
+        let fullyContained = startPercent >= 0 && endPercent <= 100 ? true : false;
+        let fullyOutside = isVisible === false ? true : false;
+        let shiftedLeft = isVisible === true && startPercent < 0 ? true : false;
+        let shiftedRight = isVisible === true && endPercent > 100 ? true : false;         
+
+        //if ( cd['starts'][i] >= this.state.startTime && cd['starts'][i] <= this.state.endTime) { isVisible = true; }
+        //if ( cd['ends'][i] >= this.state.startTime && cd['ends'][i] <= this.state.endTime) { isVisible = true; }
+
+
+//        console.log('biggestPercent', biggestPercent, startPercent, endPercent, thisBarPercent );
+
+        let showOrHide = isVisible === true ? stylesC.showBar : stylesC.hideBar;
 
         let labelClass = stylesC.valueCenterBar;
-        let blockStyle : any = { height: stateHeight , width: ( cd.percents[i] ) + '%'};
+        let blockStyle : any = { height: stateHeight , width: ( thisBarPercent ) + '%'};
         let valueStyle : any = {};
 
-        cd[barValues][i] +=  getRandomInt(-20,20);
-        if ( cd[barValues][i] < 5 ) { cd[barValues][i] = getRandomInt(5,50) ; }
+        //cd[barValues][i] +=  getRandomInt(-20,20);
+        //if ( cd[barValues][i] < 5 ) { cd[barValues][i] = getRandomInt(5,50) ; }
 
-        let barLabel = barValueAsPercent === true ? ( cd.percents[i].toFixed(1) ) + '%' : cd[barValues][i];
-        let barPercent = 50;
+        //let barLabel = barValueAsPercent === true ? ( thisBarPercent.toFixed(1) ) + '%' : cd[barValues][i];
+        //let barPercent = 50;
 
+      
         if ( stacked === false ) { 
-          barPercent = ( cd[barValues][i] / maxNumber ) * 100;
+          //barPercent = ( cd[barValues][i] / maxNumber ) * 100;
           blockStyle.float = 'none' ;
-          blockStyle.width = barPercent + '%';
-          barLabel += ' - ' + cd.labels[i];
+          blockStyle.width = thisBarPercent + '%';
+          blockStyle.left = startPercent + '%';
+          //barLabel += ' - ' + cd.labels[i];
           blockStyle.whiteSpace = 'nowrap';
-          blockStyle.transform =  'scale(50%)';
+          //blockStyle.transform =  'scale(50%)';
 
           blockStyle.backgroundColor = '#E27A3F';
-          if ( barPercent < 50 ) {
+
+          //If barPercent < 50, try to put label outside of bar.
+          if ( thisBarPercent < 50 ) {
             labelClass = stylesC.valueRightBar;
             blockStyle.overflow = 'visible';
-            let leftValue = barPercent < 1 ? '15%' : ( 1 + 7 / barPercent ) * 100 + '%'; // Logic:  1 + y/x where x is the % of the bar, y is the % to the right of the bar you want the label
-            valueStyle.left = leftValue;
+            let labelPadRightArrow = thisBarPercent < 1 ? '15%' : ( 1 + 7 / thisBarPercent ) * 100 + '%'; // Logic:  1 + y/x where x is the % of the bar, y is the % to the right of the bar you want the label
+            valueStyle.left = labelPadRightArrow;
             blockStyle.color = 'black';
-            blockStyle.transform =  'translateX('+ getRandomInt( -50,50) +')';
-            blockStyle.transform =  'scaleX('+ getRandomInt( 1,2) +')';            
+            // blockStyle.transform =  'translateX('+ getRandomInt( -50,50) +')';
+            //blockStyle.transform =  'scaleX('+ getRandomInt( 1,2) +')';            
           }
 
         }
@@ -248,7 +286,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
          * To shift arrow to right:  add left xx% to the left arrow and block
          */
 
-        let arrowLeft = <div className={ [stylesC.arrowLeft,  ].join(' ') } style={{ borderLeft: '50px solid transparent' }}></div>;
+        let arrowLeft = <div className={ [stylesC.arrowLeft,  ].join(' ') } style={{ borderLeft: '50px solid transparent', left: startPercent + '%' }}></div>;
 
         let spanStyle = { transform: 1 };
         let theChart =
@@ -256,8 +294,9 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
                <span className={ labelClass } style={ valueStyle } >{ barLabel }</span> { arrowRight }
           </span>;
 
+        // to slide bar, shift arrowLeft by x% and block class
         if ( stacked === false ) {
-
+            //Adding left to this div does nothing.
             theChart = <div className= { showOrHide } style= {{ }}>{ theChart } { arrowLeft }</div>;
         }
 
@@ -282,8 +321,8 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
       <div className={ styles.cssreactbarchart }>
         <div className={ styles.container }>
           <figure className={ stylesC.cssChart }>
-            <div className={ stylesC.yAxis } >
-              <h3>Chart Title</h3>
+            <div className={ '' } >
+            <h3> { this.state.startLocal + ' - ' + this.state.endLocal }</h3>
             </div>
             <div className={ stylesC.graphic } >
               { charts }
@@ -311,6 +350,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
     //This sends back the correct pivot category which matches the category on the tile.
     let e: any = event;
     let value = 'TBD';
+
     if ( e.target.innerText != '' ) {
       value = e.target.innerText;   
     } else if ( item.currentTarget.innerText != '' ){
@@ -318,10 +358,36 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
   
     }
 
-    console.log( 'You clicked: ', value );  
+    /**
+     * 
+     *     This is used to get random yyyy-mm for the date range.
+    let startYear = getRandomInt(2019,2022);
+    let startMonth = getRandomInt(0, 11);
+    let endYear = startMonth === 11 ? getRandomInt(startYear + 1, 2022 + 1) : getRandomInt(startYear, 2022 + 1) ; 
+    let endMonth = startYear === endYear ? getRandomInt(startMonth + 1 , 11 ) : getRandomInt( 0 , 11 ) ;
+ 
+     */
+   
+    let startYear = getRandomInt(2019,2022);
+    let startMonth = 0;
+    let endYear = startYear; 
+    let endMonth = 11 ;
 
+
+    let endDayOfMonth = new Date(endYear, endMonth + 1, 0).getDate();
+
+    let startDate = new Date( startYear, 0, 1 );
+    let endDate = new Date(endYear, endMonth, endDayOfMonth);
+    let startLocal= startYear + '-' + ( startMonth + 1);
+    let endLocal= endYear + '-' + ( endMonth + 1);
+
+    console.log('Start End:', startLocal, endLocal );
     this.setState({
-        toggle: !Toggle,
+      startTime: startDate.getTime(),
+      endTime: endDate.getTime(),
+      startLocal: startLocal,
+      endLocal: endLocal,
+      rangeTime: endDate.getTime() - startDate.getTime(),
     });
     //e.target.innerText or e.target.id gives info about the item clicked.
     //alert('Hi! You clicked: ' + value);

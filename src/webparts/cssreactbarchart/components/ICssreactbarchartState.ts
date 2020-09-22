@@ -4,5 +4,9 @@ import { ICSSChartSeries } from './IReUsableInterfaces';
 export interface ICssreactbarchartState {
   toggle: boolean;
   chartData: ICSSChartSeries[];
-  rowVis: boolean[];
+  startTime: number;
+  endTime: number;
+  rangeTime: number;
+  startLocal: string;
+  endLocal: string;
 }
