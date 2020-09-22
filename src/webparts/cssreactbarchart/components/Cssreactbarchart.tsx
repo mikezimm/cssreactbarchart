@@ -122,25 +122,41 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
       console.log('chartData after: cd', cd );
 
+      /**
+       * To indent bar and label:
+       * set .block and .arrowLeft to be the % shift to right
+       * if you indent more than 50%, the label should be on the left of the arrow.
+       * 
+       * Probably the best approach, would be to figure out:
+       * left % (indent), size % on screen, right % (white space), then put label in biggest block
+       * Or if the visible bar is >= 50% of the screen, put in bar... then look at above scenario if needed.
+       * Another scenario:  if the bar goes off the screen but visible bar is > 50% of the screen, shift label left.
+       */
       let thisChart : any[] = [];
       let maxNumber: number = Math.max( ...cd[barValues] );  //Need to use ... spread in math operators:  https://stackoverflow.com/a/1669222
       for ( let i in cd[barValues] ){
 
+        let labelClass = stylesC.valueCenterBar;
         let blockStyle : any = { height: stateHeight , width: ( cd.percents[i] ) + '%'};
         let valueStyle : any = {};
         let barLabel = barValueAsPercent === true ? ( cd.percents[i].toFixed(1) ) + '%' : cd[barValues][i];
+        let barPercent = 50;
+
         if ( stacked === false ) { 
-          let barPercent = ( cd[barValues][i] / maxNumber ) * 100;
+          barPercent = ( cd[barValues][i] / maxNumber ) * 100;
           blockStyle.float = 'none' ;
           blockStyle.width = barPercent + '%';
           barLabel += ' - ' + cd.labels[i];
           blockStyle.whiteSpace = 'nowrap';
 
+          blockStyle.backgroundColor = '#E27A3F';
           if ( barPercent < 50 ) {
+            labelClass = stylesC.valueRightBar;
             blockStyle.overflow = 'visible';
-            let leftValue = barPercent < 1 ? '200px' : 140 + ( 50 - barPercent ) * 20 / barPercent  + '%'; 
+            let leftValue = barPercent < 1 ? '15%' : ( 1 + 7 / barPercent ) * 100 + '%'; // Logic:  1 + y/x where x is the % of the bar, y is the % to the right of the bar you want the label
             valueStyle.left = leftValue;
             blockStyle.color = 'black';
+            blockStyle.transform =  'translateX(50%)';
           }
 
         }
@@ -150,9 +166,10 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
          * To shift arrow to right:  add left xx% to the left arrow and block
          */
         
+        let spanStyle = { transform: 1 }
         thisChart.push(
           <span id={ cd.labels[i] } onClick= { this.onclick.bind(this) } className={ [stylesC.block, stylesC.innerShadow].join(' ') } style={ blockStyle } title={ cd.labels[i] } >
-               <span className={ stylesC.value } style={ valueStyle } >{ barLabel }</span> { arrowRight }
+               <span className={ labelClass } style={ valueStyle } >{ barLabel }</span> { arrowRight }
           </span>
         ) ;
       }
@@ -209,9 +226,18 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
   private onclick = (item): void => {
     //This sends back the correct pivot category which matches the category on the tile.
     let e: any = event;
+    let value = 'TBD';
+    if ( e.target.innerText != '' ) {
+      value = e.target.innerText;   
+    } else if ( item.currentTarget.innerText != '' ){
+      value = item.currentTarget.innerText;
+  
+    }
+
+    console.log( 'You clicked: ', value );  
+
     //e.target.innerText or e.target.id gives info about the item clicked.
-    console.log(item);
-    alert('Hi!');
+    alert('Hi! You clicked: ' + value);
   }
 
 }
