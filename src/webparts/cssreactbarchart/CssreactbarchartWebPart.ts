@@ -21,7 +21,7 @@ export default class CssreactbarchartWebPart extends BaseClientSideWebPart<ICssr
     const element: React.ReactElement<ICssreactbarchartProps> = React.createElement(
       Cssreactbarchart,
       {
-        description: this.properties.description
+        chartData: null,
       }
     );
 

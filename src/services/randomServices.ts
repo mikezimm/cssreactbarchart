@@ -47,6 +47,25 @@ export function getRandomFromArray(arr) {
 export function randomDate(start, end) {
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 }
+  
+  
+  export function generateVals ( qty, min, max ) {
+    let vals = [];
+    for (let i = 0; i < qty ; i++) {
+      vals.push (  getRandomInt(min , max) );
+    }
+    return vals;
+  }
+  
+  export function generateTitles ( lbl: string, qty: number ) {
+    let titles = [];
+    for (let i = 0; i < qty ; i++) {
+      //https://stackoverflow.com/a/3145054
+      var chr = String.fromCharCode(65 + i);
+      titles.push (  lbl + ' - ' + chr );
+    }
+    return titles;
+  }
 
 /**
  * Items to create when privisioning the list

@@ -1,3 +1,5 @@
+import { ICSSChartSeries } from './IReUsableInterfaces';
+
 export interface ICssreactbarchartProps {
-  description: string;
+  chartData?: ICSSChartSeries[];
 }

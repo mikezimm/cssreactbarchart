@@ -144,24 +144,45 @@ export interface IChartSeries {
     origCounts?: any[];
   }
   
+  export interface ILabelColor {
+    label: string;
+    barColor?: string;
+    fontColor?: string;
+    fontStyle?: string;
+  }
+
+  import { ColorsBlue, ColorsBrown, ColorsGray, ColorsGreen, ColorsRed } from '../../../services/colorServices';
+
   export interface ICSSChartSeries {
     title: string;
     labels: any[];
+    type?: 'bar' | 'other';
+    chartType: 'bar' | 'other';
+
+    stacked?: boolean;
+    sortStack?: 'asc' | 'dec' ;
+    barValueAsPercent? : boolean;
+    height?: number | string ; //This would be horizonal bar height... one horizontal layer
+    barValues?: 'val1' | 'sums' | 'avgs' | 'percents';
+    titleLocation?: 'top' | 'side';
+
+    barColors?: 'blue' | 'green' |'brown' | 'gray' | 'red' | 'brown' | 'themed' | 'custom' ;
+    customColors?: ILabelColor[];
     axisTitle?: string;
-    sums?: number[];
-    counts?: number[];
-    avgs?: number[];
+    val1?: number[];
     percents?: any[];
-    totalS?: number;
-    totalC?: number;
-    totalA?: number;
+    count?: number;
+    avg?: number;
+    sum?: number;
+    min?: number;
+    max?: number;
     changes?: any[];
     changeNotes?: string[];
     warnNotes?: string[];
     errorNotes?: string[];
-    origLabels?: any[];
-    origSums?: any[];
-    origCounts?: any[];
+    stylesChart?: any;
+    stylesBar?: any;
+    stylesLabel?: any;
   }
 
   export interface ICharNote {

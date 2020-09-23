@@ -1,14 +1,14 @@
 import * as React from 'react';
 import styles from './Cssreactbarchart.module.scss';
 import { ICssreactbarchartProps } from './ICssreactbarchartProps';
-import { escape } from '@microsoft/sp-lodash-subset';
 
-import { getRandomInt, getRandomFromArray, randomDate, getRandomChance } from '../../../services/randomServices';
+import { getRandomInt, getRandomFromArray, generateVals, generateTitles, randomDate, getRandomChance } from '../../../services/randomServices';
 
 import { ICSSChartSeries } from './IReUsableInterfaces';
 
 import stylesC from './cssChart.module.scss';
 
+import { ColorsBlue, ColorsBrown, ColorsGray, ColorsGreen, ColorsRed } from '../../../services/colorServices';
 
 /***
  *    d888888b d8b   db d888888b d88888b d8888b. d88888b  .d8b.   .o88b. d88888b .d8888. 
@@ -38,40 +38,24 @@ export interface ISimpleData {
  *                                                                                  
  *                                                                                  
  */
+// makeChartData ,
+
 
 export function makeChartData( qty: number, label: string ) {
 
-  let randomNums = generateVals(qty);
+  let randomNums = generateVals( qty, 35, 90 );
   let randomTitles = generateTitles( label, qty );
   const arrSum = randomNums.reduce((a,b) => a + b, 0);
   let percents = randomNums.map( v => { return (v / arrSum * 100 ) ; });
   let chartData: ICSSChartSeries = {
     title: label,
+    chartType: 'bar',
     labels: randomTitles,
-    counts: randomNums,
+    val1: randomNums,
     percents: percents,
-    totalS: arrSum,
+    sum: arrSum,
   };
   return chartData;
-}
-
-
-export function generateVals ( qty ) {
-  let vals = [];
-  for (let i = 0; i < qty ; i++) {
-    vals.push (  getRandomInt(55 , 75) );
-  }
-  return vals;
-}
-
-export function generateTitles ( lbl: string, qty: number ) {
-  let titles = [];
-  for (let i = 0; i < qty ; i++) {
-    //https://stackoverflow.com/a/3145054
-    var chr = String.fromCharCode(65 + i);
-    titles.push (  lbl + ' - ' + chr );
-  }
-  return titles;
 }
 
 export function sortKeysByOtherKey( obj: any, sortKey: string, order: 'asc' | 'dec', dataType: 'number' | 'string', otherKeys: string[]) {
@@ -119,15 +103,21 @@ export function sortKeysByOtherKey( obj: any, sortKey: string, order: 'asc' | 'd
  */
 
 
-const chartType: 'bar' | 'other' = 'bar';
-const stacked: boolean = false;
-const sortStack: 'asc' | 'dec' | false = undefined;
-const barValueAsPercent : boolean = false;
-const height: number | string = "50px"; //This would be horizonal bar height... one horizontal layer
-const barValues: 'counts' | 'sums' | 'avgs' | 'percents' = 'counts';
+const chartTypeDef: 'bar' | 'other' = 'bar';
+const stackedDef: boolean = false;
+const sortStackDef: 'asc' | 'dec' | false = undefined;
+const barValueAsPercentDef : boolean = false;
+const heightDef: number | string = "50px"; //This would be horizonal bar height... one horizontal layer
+const barValuesDef: 'val1' | 'sums' | 'avgs' | 'percents' = 'val1';
+const titleLocationDef: 'top' | 'side' = 'top';
+const randomPallets = [ColorsBlue, ColorsBrown, ColorsGray, ColorsGreen, ColorsRed];
 
 export default class Cssreactbarchart extends React.Component<ICssreactbarchartProps, {}> {
 
+  public constructor(props:ICssreactbarchartProps){
+    super(props);
+
+  }
 
   /***
    *    d8888b. db    db d8888b. db      d888888b  .o88b.      d8888b. d88888b d8b   db d8888b. d88888b d8888b. 
@@ -142,7 +132,8 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
   public render(): React.ReactElement<ICssreactbarchartProps> {
 
-
+    let useProps = this.props.chartData !== null && this.props.chartData !== undefined && this.props.chartData.length > 0 ? true : false;
+ 
     /***
  *    .d8888.  .d8b.  .88b  d88. d8888b. db      d88888b      d8888b.  .d8b.  d888888b  .d8b.  
  *    88'  YP d8' `8b 88'YbdP`88 88  `8D 88      88'          88  `8D d8' `8b `~~88~~' d8' `8b 
@@ -158,17 +149,23 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
     let chartData: ICSSChartSeries[] = [];
 
-    chartData.push( makeChartData(15, 'Category') ) ;
-    chartData.push( makeChartData(15, 'Item') ) ;
-    chartData.push( makeChartData(15, 'Product') ) ;
+    if ( useProps === false ) {
+      chartData.push( makeChartData(getRandomInt(5 , 30), 'Category') ) ;
+      chartData.push( makeChartData(getRandomInt(5 , 30), 'Item') ) ;
+      chartData.push( makeChartData(getRandomInt(5 , 20), 'Product') ) ;
+
+    } else {
+      chartData = this.props.chartData;
+
+    }
+
+    let stacked = useProps === true && this.props.chartData[0].stacked ? this.props.chartData[0].stacked : stackedDef;
 
 //    console.log('chartData Before: ', chartData );
     if ( stacked === false ) {
       //Re-sort all arrays by same key:
 
     }
-
-    let stateHeight = stacked === false ? "40px" : height;
 
 
     /***
@@ -182,14 +179,31 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
      *                                                                                            
      */
 
-
     let charts = chartData.map( cdO => {
+
+      /**
+       * Set chart defaults
+       */
+      let chartType = useProps === true && cdO ? cdO.type : chartTypeDef;
+      let sortStack = useProps === true && cdO.sortStack ? cdO.sortStack : sortStackDef;
+      let barValueAsPercent = useProps === true && cdO.barValueAsPercent ? cdO.barValueAsPercent : barValueAsPercentDef;
+      let height = useProps === true && cdO.height ? cdO.height : heightDef;
+      let barValues = useProps === true && cdO.barValues ? cdO.barValues : barValuesDef;
+      let titleLocation = useProps === true && cdO.titleLocation ? cdO.titleLocation : titleLocationDef;
+      let stateHeight = stacked === false ? "40px" : height;
+      let randomPallet = getRandomFromArray(randomPallets);
+      let randomizeColors = useProps === true && cdO.barColors ? false : true ;
+
+
+      if ( stacked === false && cdO[barValues].length > 15 ) { stateHeight = '20px'; }
+      else if ( stacked === false && cdO[barValues].length > 8 ) { stateHeight = '30px'; }
+      else { stateHeight = '40px'; }
 
       let cd : ICSSChartSeries = null;
 
       if ( stacked === false || sortStack === 'asc' || sortStack === 'dec' ) {
         let sortOrder : 'asc' | 'dec' = stacked === false || sortStack === 'dec' ? 'dec' : 'asc';
-        cd = sortKeysByOtherKey( cdO, barValues, sortOrder, 'number', ['labels',barValues,'percents'] );
+        cd = sortKeysByOtherKey( cdO, barValues, sortOrder, 'number', ['labels', barValues, 'percents'] );
       } else {
         cd = cdO;
       }
@@ -199,13 +213,17 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
       let minNumber: number = Math.min( ...cd[barValues] );  //Need to use ... spread in math operators:  https://stackoverflow.com/a/1669222
 
       let chartRange = maxNumber - minNumber;
-      let leftEdgeValue = minNumber - chartRange * .1;
+      let leftEdgeValue = Math.floor( minNumber - chartRange * .1 );
+      if ( leftEdgeValue < 0 && minNumber >= 1 ) { leftEdgeValue = 0 ; } //Set to zero if it's close to 
       let rightEdgeValue = maxNumber;
 
+      let scaleNote = 'Scale: '  + leftEdgeValue + ' to ' + rightEdgeValue;
 
-      //      console.log('chartData after: cd', cd );
-//      console.log('chartData maxNumber:', maxNumber );
+      let scaleNoteEle = <div style= {{ paddingBottom: 10, paddingTop: 10, fontWeight: 600 }} title={ scaleNote} > { scaleNote }</div>;
 
+//      console.log('chartData after: cd', cd );
+//      console.log('chartData minNumber, maxNumber:', minNumber, maxNumber );
+//     console.log('chartData range:', leftEdgeValue, rightEdgeValue, chartRange );
       /***
        *    .88b  d88.  .d8b.  db   dD d88888b      d8888b.  .d8b.  d8888b. .d8888. 
        *    88'YbdP`88 d8' `8b 88 ,8P' 88'          88  `8D d8' `8b 88  `8D 88'  YP 
@@ -216,23 +234,49 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
        *                                                                            
        *                                                                            
        */
+      let z = 0;
       for ( let i in cd[barValues] ){
 
         let blockStyle : any = { height: stateHeight , width: ( cd.percents[i] ) + '%'};
         let valueStyle : any = {};
+
+        if ( randomizeColors && stacked === true ) {
+          blockStyle.backgroundColor = getRandomFromArray( randomPallet );
+          blockStyle.color = 'black';
+
+        } else {
+          let cZ : any =  ( parseInt(i, 10) ) % randomPallet.length;
+          blockStyle.backgroundColor = randomPallet [ cZ ] ;
+          blockStyle.color = 'black';
+
+        }
+
         let barLabel = barValueAsPercent === true ? ( cd.percents[i].toFixed(1) ) + '%' : cd[barValues][i];
 
-
         if ( stacked === false ) { 
+
+          if ( stateHeight === '30px' ) {
+            valueStyle.top = '7px' ;
+          }
+
+          if ( stateHeight === '20px' ) {
+            valueStyle.top = '5px' ;
+            valueStyle.fontSize = 'smaller';
+          }
+
+          //This is on scale of 0 to 100
           let barPercent = ( cd[barValues][i] / maxNumber ) * 100;
+          //This is adjusting the left side of chart for better perato look
+          let scaledBarPercent = 100 * ( cd[barValues][i] - leftEdgeValue ) / ( rightEdgeValue - leftEdgeValue ) ;
+          barPercent = scaledBarPercent;
+
           blockStyle.float = 'none' ;
           blockStyle.width = barPercent + '%';
           barLabel += ' - ' + cd.labels[i];
           blockStyle.whiteSpace = 'nowrap';
 
-
           if ( barPercent < 50 ) {
-//            console.log('chartData barPercent < 50' );
+            console.log('chartData barPercent < 50' );
             blockStyle.overflow = 'visible';
             let leftValue = barPercent < 1 ? '7%' : ( 1 + ( 1.2 * barPercent / 100 ) * 100 ) + '%'; 
             valueStyle.left = '20px';
@@ -253,16 +297,20 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
         ) ;
       }
 
-      let chartStyles : any = { lineHeight: stateHeight };
-      let rowStyles : any = stacked === false ? { maxWidth: '450px' } : {};
+      if ( stacked === false ) {  thisChart.push( scaleNoteEle ) ; }
+
+      let chartStyles : any = { lineHeight: stateHeight, fontSize: 18, fontWeight : '600' };
+      let rowStyles : any = stacked === false ? { maxWidth: '450px', marginBottom: null } : {};
+      let titleEle = titleLocation === 'side' ?
+        <h6 style={ chartStyles }>{ cd.title }</h6> :
+        <div style={ chartStyles }>{ cd.title }</div>;
 
       return <div className={ stylesC.row } style={ rowStyles }>
-          <h6 style={ chartStyles }>{ cd.title }</h6>
+          { titleEle }
           <div className={ stylesC.chart } >
             { thisChart }
           </div>
         </div>;
-
     });
 
     /***
@@ -275,14 +323,17 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
      *                                                       
      *                                                       
      */
-
+/**
+ *          Adding this would add left y-axis title
+ *          <div className={ stylesC.yAxis } >
+              <h3>Chart Title</h3>
+            </div>
+ */
     return (
       <div className={ styles.cssreactbarchart }>
         <div className={ styles.container }>
           <figure className={ stylesC.cssChart }>
-            <div className={ stylesC.yAxis } >
-              <h3>Chart Title</h3>
-            </div>
+
             <div className={ stylesC.graphic } >
               { charts }
             </div>
