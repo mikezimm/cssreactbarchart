@@ -27,7 +27,7 @@ export function makeChartData( qty: number, label: string ) {
   const arrSum = randomNums.reduce((a,b) => a + b, 0);
   let percents = randomNums.map( v => { return (v / arrSum * 100 ) ; });
   let randomStarts = [];
-  for ( let i = 0 ; i < 10 ; i++ ) {
+  for ( let i = 0 ; i < qty ; i++ ) {
     randomStarts.push( randomDate(new Date(2018, 3, 15), new Date(2024, 7, 21) ).getTime() );
   }
   let randomEnds = randomStarts.map( s => {
@@ -113,7 +113,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
       let chartData: ICSSChartSeries[] = [];
 
-      chartData.push( makeChartData(4, 'Category') ) ;
+      chartData.push( makeChartData(30, 'Category') ) ;
 //      chartData.push( makeChartData(10, 'Item') ) ;
 //      chartData.push( makeChartData(10, 'Product') ) ;
 
@@ -217,6 +217,8 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
         let barLabel = startLabel + ' - ' + endLabel;
 
+        let thisTitle = cd.labels[i] + ': ' + barLabel;
+
         //BAR PERCENTS  0% = Timeline Start,  100% = Timeline End
         let startPercent = 100* ( cd['starts'][i] - this.state.startTime ) / this.state.rangeTime ;
         let endPercent = 100* ( cd['ends'][i] - this.state.startTime ) / this.state.rangeTime;
@@ -230,13 +232,26 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
         let barGapRight = isVisible === true ? endPercent > 100 ? 0 : 100 - endPercent : null;    
         let visBarPercent = isVisible === true ? 100 - barGapRight - barGapLeft : 0 ;
 
-        let biggestVisiblePercent = visBarPercent > barGapLeft ? visBarPercent : barGapLeft;
-        biggestVisiblePercent = barGapRight > barGapLeft ? barGapRight : barGapLeft;
-
+        let biggestVisiblePercent = '';
+        let maxBar = Math.max(...[barGapLeft, barGapRight, visBarPercent]);
+        switch ( maxBar ) {
+          case barGapRight:
+            biggestVisiblePercent = 'barGapRight';
+            break;
+          case barGapLeft:
+            biggestVisiblePercent = 'barGapLeft';
+            break;
+          default:
+            biggestVisiblePercent ='visBarPercent';
+        }
         let fullyContained = startPercent >= 0 && endPercent <= 100 ? true : false;
         let fullyOutside = isVisible === false ? true : false;
         let shiftedLeft = isVisible === true && startPercent < 0 ? true : false;
-        let shiftedRight = isVisible === true && endPercent > 100 ? true : false;         
+        let shiftedRight = isVisible === true && endPercent > 100 ? true : false;  
+        let currentFit = fullyContained ? 'fullyContained' : fullyOutside ? 'fullyOutside' : shiftedLeft ? 'shiftedLeft' : 'shiftedRight'
+
+        let message = barLabel + ' : CurrentFit = ' + currentFit;
+        console.log('message: ' , message );
 
         //if ( cd['starts'][i] >= this.state.startTime && cd['starts'][i] <= this.state.endTime) { isVisible = true; }
         //if ( cd['ends'][i] >= this.state.startTime && cd['ends'][i] <= this.state.endTime) { isVisible = true; }
@@ -257,47 +272,63 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
         //let barPercent = 50;
 
       
+        let arrowRight = <div className={ stylesC.arrowRight } style={{ borderLeft: '50px solid transparent' }}></div>;
+        let arrowLeft = <div className={ [stylesC.arrowLeft,  ].join(' ') } style={{ borderLeft: '50px solid transparent', left: startPercent + '%' }}></div>;
+        let theChart = null;
+
         if ( stacked === false ) { 
-          //barPercent = ( cd[barValues][i] / maxNumber ) * 100;
           blockStyle.float = 'none' ;
           blockStyle.width = thisBarPercent + '%';
           blockStyle.left = startPercent + '%';
-          //barLabel += ' - ' + cd.labels[i];
           blockStyle.whiteSpace = 'nowrap';
-          //blockStyle.transform =  'scale(50%)';
-
           blockStyle.backgroundColor = '#E27A3F';
 
-          //If barPercent < 50, try to put label outside of bar.
-          if ( thisBarPercent < 50 ) {
+          if ( biggestVisiblePercent === 'visBarPercent' ) {
+
+            theChart =
+            <span id={ cd.labels[i] } className={ [stylesC.block, stylesC.innerShadow, ].join(' ') } style={ blockStyle } >
+                 <span className={ labelClass } style={ valueStyle } >{ barLabel }</span> { arrowRight }
+            </span>;
+
+          } else if ( biggestVisiblePercent === 'barGapRight' ) {
             labelClass = stylesC.valueRightBar;
             blockStyle.overflow = 'visible';
             let labelPadRightArrow = thisBarPercent < 1 ? '15%' : ( 1 + 7 / thisBarPercent ) * 100 + '%'; // Logic:  1 + y/x where x is the % of the bar, y is the % to the right of the bar you want the label
             valueStyle.left = labelPadRightArrow;
             blockStyle.color = 'black';
-            // blockStyle.transform =  'translateX('+ getRandomInt( -50,50) +')';
-            //blockStyle.transform =  'scaleX('+ getRandomInt( 1,2) +')';            
+
+            theChart =
+            <span id={ cd.labels[i] } className={ [stylesC.block, stylesC.innerShadow, ].join(' ') } style={ blockStyle } >
+                 <span className={ labelClass } style={ valueStyle } >{ barLabel }</span> { arrowRight }
+            </span>;            
+            
+
+          } else if ( biggestVisiblePercent === 'barGapLeft' ) {
+          
+            labelClass = stylesC.valueLeftBar;
+            blockStyle.overflow = 'visible';
+            blockStyle.top = '-1em';
+            arrowLeft = <div className={ [stylesC.arrowLeft,  ].join(' ') } style={{ top: '-54px' , borderLeft: '50px solid transparent', left: startPercent + '%' }}></div>;
+
+            let barLabelSpan = <span className={ labelClass } style={ valueStyle } >{ barLabel }</span>;
+            let theBar = <span>
+                  <span id={ cd.labels[i] } className={ [stylesC.block, stylesC.innerShadow, ].join(' ') } style={ blockStyle } >
+                        { arrowRight }
+                  </span>
+              </span>;
+              theChart = [];
+              theChart.push(barLabelSpan);
+              theChart.push(theBar);             
+
+          } else {
+            alert('Not sure where to put the label for this one: ' + barLabel );
           }
 
         }
-        let arrowRight = <div className={ stylesC.arrowRight } style={{ borderLeft: '50px solid transparent' }}></div>;
 
-        /**
-         * To shift arrow to right:  add left xx% to the left arrow and block
-         */
-
-        let arrowLeft = <div className={ [stylesC.arrowLeft,  ].join(' ') } style={{ borderLeft: '50px solid transparent', left: startPercent + '%' }}></div>;
-
-        let spanStyle = { transform: 1 };
-        let theChart =
-          <span id={ cd.labels[i] } onClick= { this.onclick.bind(this) } className={ [stylesC.block, stylesC.innerShadow, ].join(' ') } style={ blockStyle } title={ cd.labels[i] } >
-               <span className={ labelClass } style={ valueStyle } >{ barLabel }</span> { arrowRight }
-          </span>;
-
-        // to slide bar, shift arrowLeft by x% and block class
         if ( stacked === false ) {
             //Adding left to this div does nothing.
-            theChart = <div className= { showOrHide } style= {{ }}>{ theChart } { arrowLeft }</div>;
+            theChart = <div title={ thisTitle } className= { showOrHide } style= {{ }} onClick= { this.onclick.bind(this) } >{ theChart } { arrowLeft }</div>;
         }
 
         thisChart.push( theChart ) ;
@@ -382,6 +413,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
     let endLocal= endYear + '-' + ( endMonth + 1);
 
     console.log('Start End:', startLocal, endLocal );
+    console.log('Clicked Value:', value );
     this.setState({
       startTime: startDate.getTime(),
       endTime: endDate.getTime(),
