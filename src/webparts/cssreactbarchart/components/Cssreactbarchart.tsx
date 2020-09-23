@@ -248,7 +248,13 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
         let fullyOutside = isVisible === false ? true : false;
         let shiftedLeft = isVisible === true && startPercent < 0 ? true : false;
         let shiftedRight = isVisible === true && endPercent > 100 ? true : false;  
-        let currentFit = fullyContained ? 'fullyContained' : fullyOutside ? 'fullyOutside' : shiftedLeft ? 'shiftedLeft' : 'shiftedRight'
+        let currentFit = '';
+        if ( fullyContained === true ) { currentFit = 'fullyContained'; }
+        else if ( fullyOutside === true ) { currentFit = 'fullyOutside'; }
+        else if ( shiftedLeft === true ) { currentFit = 'shiftedLeft'; }
+        else if ( shiftedRight === true ) { currentFit = 'shiftedRight'; }
+        else { alert('Not detecting shifted value.'); }
+
 
         let message = barLabel + ' : CurrentFit = ' + currentFit;
         console.log('message: ' , message );
