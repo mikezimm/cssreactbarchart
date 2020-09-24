@@ -3,7 +3,7 @@
   "solution": {
     "name": "cssreactbarchart-client-side-solution",
     "id": "8df06ea5-e70e-4b73-ba18-f7119a8ec4c6",
-    "version": "1.0.0.0",
+    "version": "1.0.0.3",
     "includeClientSideAssets": true,
     "isDomainIsolated": false,
     "developer": {
