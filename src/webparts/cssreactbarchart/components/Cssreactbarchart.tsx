@@ -182,6 +182,19 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
     
     let charts = chartData.map( cdO => {
 
+
+      /***
+       *    .d8888. d888888b db    db db      d88888b      d888888b d8b   db d888888b d888888b d888888b  .d8b.  db      d888888b d88888D  .d8b.  d888888b d888888b  .d88b.  d8b   db 
+       *    88'  YP `~~88~~' `8b  d8' 88      88'            `88'   888o  88   `88'   `~~88~~'   `88'   d8' `8b 88        `88'   YP  d8' d8' `8b `~~88~~'   `88'   .8P  Y8. 888o  88 
+       *    `8bo.      88     `8bd8'  88      88ooooo         88    88V8o 88    88       88       88    88ooo88 88         88       d8'  88ooo88    88       88    88    88 88V8o 88 
+       *      `Y8b.    88       88    88      88~~~~~         88    88 V8o88    88       88       88    88~~~88 88         88      d8'   88~~~88    88       88    88    88 88 V8o88 
+       *    db   8D    88       88    88booo. 88.            .88.   88  V888   .88.      88      .88.   88   88 88booo.   .88.    d8' db 88   88    88      .88.   `8b  d8' 88  V888 
+       *    `8888Y'    YP       YP    Y88888P Y88888P      Y888888P VP   V8P Y888888P    YP    Y888888P YP   YP Y88888P Y888888P d88888P YP   YP    YP    Y888888P  `Y88P'  VP   V8P 
+       *                                                                                                                                                                             
+       *                                                                                                                                                                             
+       */
+
+
       let stylesChart = cdO.stylesChart ? cdO.stylesChart : null;
       let stylesRow = cdO.stylesRow ? cdO.stylesRow : null;
       let stylesTitle = cdO.stylesTitle ? cdO.stylesTitle : null;
@@ -226,7 +239,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
       let scaleNote = 'Scale: '  + leftEdgeValue + ' to ' + rightEdgeValue;
 
-      let scaleNoteEle = <div style= {{ paddingBottom: 10, paddingTop: 10, fontWeight: 600 }} title={ scaleNote} > { scaleNote }</div>;
+      let scaleNoteEle = <div style= {{ paddingBottom: 10, paddingTop: 10, fontWeight: 600 , fontSize: 'smaller' }} title={ scaleNote} > { scaleNote }</div>;
 
 //      console.log('chartData after: cd', cd );
 //      console.log('chartData minNumber, maxNumber:', minNumber, maxNumber );
@@ -242,9 +255,9 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
        *                                                                            
        */
 
-      let z = 0;
+      let barCount = 0;
       for ( let i in cd[barValues] ){
-
+        barCount ++;
         let blockStyle : any = stylesBlock != null ? stylesBlock : {} ;
         blockStyle.height = stateHeight;
         blockStyle.width = ( cd.percents[i] ) + '%';
@@ -267,10 +280,11 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
           if ( stateHeight === '30px' ) {
             valueStyle.top = '7px' ;
+            valueStyle.fontSize = 'small';
           }
 
           if ( stateHeight === '20px' ) {
-            valueStyle.top = '5px' ;
+            valueStyle.top = '1px' ;
             valueStyle.fontSize = 'smaller';
           }
 
@@ -297,6 +311,11 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
           }
 
+        } else { //This is stacked bar loop
+
+            valueStyle.top = '.75em' ;
+            valueStyle.fontSize = 'smaller';
+
         }
 
 //        console.log('chartData valueStyle:', valueStyle );
@@ -311,7 +330,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
       if ( stacked === false ) {  thisChart.push( scaleNoteEle ) ; }
 
       let thisTitleStyle : any = stylesTitle != null ? stylesTitle : {} ;
-      thisTitleStyle.lineHeight = stateHeight;
+      thisTitleStyle.lineHeight = '40px';
       thisTitleStyle.fontSize = 18;
       thisTitleStyle.fontWeight = '600';
 
@@ -327,7 +346,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
       
       let titleEle = titleLocation === 'side' ?
         <h6 style={ thisTitleStyle }>{ cd.title }</h6> :
-        <div style={ thisTitleStyle }>{ cd.title }</div>;
+        <div style={ thisTitleStyle }>{ cd.title }<span style={{paddingLeft: '15px', fontSize: 'smaller'}}>( { barCount} ) </span></div>;
 
 
 
