@@ -159,7 +159,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
     }
 
-    let stacked = useProps === true && this.props.chartData[0].stacked ? this.props.chartData[0].stacked : stackedDef;
+    let stacked = useProps === true && this.props.chartData[0].stacked ? this.props.chartData[0].stacked : getRandomFromArray([true,false]);
 
 //    console.log('chartData Before: ', chartData );
     if ( stacked === false ) {
@@ -185,14 +185,15 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
        * Set chart defaults
        */
       let chartType = useProps === true && cdO ? cdO.type : chartTypeDef;
-      let sortStack = useProps === true && cdO.sortStack ? cdO.sortStack : sortStackDef;
-      let barValueAsPercent = useProps === true && cdO.barValueAsPercent ? cdO.barValueAsPercent : barValueAsPercentDef;
+      let sortStack = useProps === true && cdO.sortStack ? cdO.sortStack : getRandomFromArray([false,'asc','dec']);
+      let barValueAsPercent = useProps === true && cdO.barValueAsPercent ? cdO.barValueAsPercent : getRandomFromArray([true,false]);
       let height = useProps === true && cdO.height ? cdO.height : heightDef;
       let barValues = useProps === true && cdO.barValues ? cdO.barValues : barValuesDef;
       let titleLocation = useProps === true && cdO.titleLocation ? cdO.titleLocation : titleLocationDef;
       let stateHeight = stacked === false ? "40px" : height;
       let randomPallet = getRandomFromArray(randomPallets);
       let randomizeColors = useProps === true && cdO.barColors ? false : true ;
+
 
 
       if ( stacked === false && cdO[barValues].length > 15 ) { stateHeight = '20px'; }
