@@ -179,7 +179,15 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
      *                                                                                            
      */
 
+    
     let charts = chartData.map( cdO => {
+
+      let stylesChart = cdO.stylesChart ? cdO.stylesChart : null;
+      let stylesRow = cdO.stylesRow ? cdO.stylesRow : null;
+      let stylesTitle = cdO.stylesTitle ? cdO.stylesTitle : null;
+      let stylesBlock = cdO.stylesBlock ? cdO.stylesBlock : null;
+      let stylesLabel = cdO.stylesLabel ? cdO.stylesLabel : null;
+      let stylesValue = cdO.stylesValue ? cdO.stylesValue : null;
 
       /**
        * Set chart defaults
@@ -193,8 +201,6 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
       let stateHeight = stacked === false ? "40px" : height;
       let randomPallet = getRandomFromArray(randomPallets);
       let randomizeColors = useProps === true && cdO.barColors ? false : true ;
-
-
 
       if ( stacked === false && cdO[barValues].length > 15 ) { stateHeight = '20px'; }
       else if ( stacked === false && cdO[barValues].length > 8 ) { stateHeight = '30px'; }
@@ -235,23 +241,26 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
        *                                                                            
        *                                                                            
        */
+
       let z = 0;
       for ( let i in cd[barValues] ){
 
-        let blockStyle : any = { height: stateHeight , width: ( cd.percents[i] ) + '%'};
-        let valueStyle : any = {};
-
+        let blockStyle : any = stylesBlock != null ? stylesBlock : {} ;
+        blockStyle.height = stateHeight;
+        blockStyle.width = ( cd.percents[i] ) + '%';
+        
         if ( randomizeColors && stacked === true ) {
           blockStyle.backgroundColor = getRandomFromArray( randomPallet );
           blockStyle.color = 'black';
 
         } else {
-          let cZ : any =  ( parseInt(i, 10) ) % randomPallet.length;
+          let cZ : any = ( parseInt(i, 10) ) % randomPallet.length;
           blockStyle.backgroundColor = randomPallet [ cZ ] ;
           blockStyle.color = 'black';
 
         }
 
+        let valueStyle : any = stylesValue != null ? stylesValue : {} ;
         let barLabel = barValueAsPercent === true ? ( cd.percents[i].toFixed(1) ) + '%' : cd[barValues][i];
 
         if ( stacked === false ) { 
@@ -279,6 +288,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
           if ( barPercent < 50 ) {
             console.log('chartData barPercent < 50' );
             blockStyle.overflow = 'visible';
+
             let leftValue = barPercent < 1 ? '7%' : ( 1 + ( 1.2 * barPercent / 100 ) * 100 ) + '%'; 
             valueStyle.left = '20px';
             valueStyle.transform = 'translateX(100%)';
@@ -300,15 +310,30 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
 
       if ( stacked === false ) {  thisChart.push( scaleNoteEle ) ; }
 
-      let chartStyles : any = { lineHeight: stateHeight, fontSize: 18, fontWeight : '600' };
-      let rowStyles : any = stacked === false ? { maxWidth: '450px', marginBottom: null } : {};
-      let titleEle = titleLocation === 'side' ?
-        <h6 style={ chartStyles }>{ cd.title }</h6> :
-        <div style={ chartStyles }>{ cd.title }</div>;
+      let thisTitleStyle : any = stylesTitle != null ? stylesTitle : {} ;
+      thisTitleStyle.lineHeight = stateHeight;
+      thisTitleStyle.fontSize = 18;
+      thisTitleStyle.fontWeight = '600';
 
-      return <div className={ stylesC.row } style={ rowStyles }>
+      let thisRowStyle : any = stylesRow != null ? stylesRow : {} ;
+      thisRowStyle.lineHeight = stateHeight;
+      thisRowStyle.fontSize = 18;
+      thisRowStyle.fontWeight = '600';
+
+      if ( stacked === false ) { 
+        thisRowStyle.maxWidth = '450px';
+        thisRowStyle.marginBottom = null;
+      }
+      
+      let titleEle = titleLocation === 'side' ?
+        <h6 style={ thisTitleStyle }>{ cd.title }</h6> :
+        <div style={ thisTitleStyle }>{ cd.title }</div>;
+
+
+
+      return <div className={ stylesC.row } style={ thisRowStyle }>
           { titleEle }
-          <div className={ stylesC.chart } >
+          <div className={ stylesC.chart } style= { stylesChart } >
             { thisChart }
           </div>
         </div>;
@@ -331,7 +356,7 @@ export default class Cssreactbarchart extends React.Component<ICssreactbarchartP
             </div>
  */
     return (
-      <div className={ styles.cssreactbarchart }>
+      <div className={ styles.cssreactbarchart } style = {{  }}>
         <div className={ styles.container }>
           <figure className={ stylesC.cssChart }>
 

@@ -151,8 +151,6 @@ export interface IChartSeries {
     fontStyle?: string;
   }
 
-  import { ColorsBlue, ColorsBrown, ColorsGray, ColorsGreen, ColorsRed } from '../../../services/colorServices';
-
   export interface ICSSChartSeries {
     title: string;
     labels: any[];
@@ -181,8 +179,11 @@ export interface IChartSeries {
     warnNotes?: string[];
     errorNotes?: string[];
     stylesChart?: any;
-    stylesBar?: any;
+    stylesTitle?: any;
+    stylesRow?: any;
+    stylesBlock?: any;
     stylesLabel?: any;
+    stylesValue?: any;
   }
 
   export interface ICharNote {
