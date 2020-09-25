@@ -158,7 +158,7 @@ export interface IChartSeries {
     chartType: 'bar' | 'other';
 
     stacked?: boolean;
-    sortStack?: 'asc' | 'dec' ;
+    sortStack?: 'asc' | 'dec' | false ;
     barValueAsPercent? : boolean;
     height?: number | string ; //This would be horizonal bar height... one horizontal layer
     barValues?: 'val1' | 'sums' | 'avgs' | 'percents';
